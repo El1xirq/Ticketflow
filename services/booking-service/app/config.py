@@ -4,6 +4,7 @@ from pydantic import Field
 
 class Settings(BaseSettings):
     db_url: str = Field(validation_alias="DATABASE_URL")
+    db_sync_url: str = Field(validation_alias="SYNC_DATABASE_URL")
     postgres_user: str
     postgres_password: str
     postgres_db: str
