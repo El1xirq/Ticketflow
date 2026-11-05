@@ -56,7 +56,7 @@ async def register_user(
         path="/",
     )
 
-    return TokenResponse(access_token)
+    return TokenResponse(access_token=access_token)
 
 
 async def login_user(
@@ -76,7 +76,7 @@ async def login_user(
     if not verify_password(user_data.password, user.password_hash):
         raise InvalidCredentialsException()
 
-    user_roles = [role for role in user.roles]
+    user_roles = [role.role for role in user.roles]
     access_token = create_access_token(user.id, user_roles, user.email)
     refresh_token, expire_at = create_refresh_token(user.id)
 
@@ -97,7 +97,7 @@ async def login_user(
         path="/",
     )
 
-    return TokenResponse(access_token)
+    return TokenResponse(access_token=access_token)
 
 
 async def get_refresh_user(
@@ -121,7 +121,7 @@ async def get_refresh_user(
     await revoke_refresh_token(record, session)
 
     user = await get_user_by_id(record.user_id, session)
-    user_roles = [role for role in user.roles]
+    user_roles = [role.role for role in user.roles]
 
     new_access_token = create_access_token(user.id, user_roles, user.email)
     new_refresh_token, expires_at = create_refresh_token(user.id)

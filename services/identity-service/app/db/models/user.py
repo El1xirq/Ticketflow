@@ -41,6 +41,7 @@ class UserORM(Base):
         back_populates="user",
         cascade="all, delete-orphan",
         passive_deletes=True,
+        lazy='selectin',
     )
 
     refresh_tokens: Mapped[list["RefreshTokenORM"]] = relationship(

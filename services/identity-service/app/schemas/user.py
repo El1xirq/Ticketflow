@@ -11,9 +11,3 @@ class UserResponse(BaseModel):
     is_active: bool
 
     model_config = ConfigDict(from_attributes=True)
-
-
-class UpdateUserSchema(BaseModel):
-    email: EmailStr | None = Field(default=None)
-    password_hash: str | None = Field(default=None)
-    roles: list[UserRole] | None = Field(default=None)

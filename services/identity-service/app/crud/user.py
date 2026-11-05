@@ -7,7 +7,6 @@ from app.db.session import SessionDep
 from app.db.models import UserORM
 from app.db.models import UserRoleORM, UserRole
 from app.schemas.auth import RegistrationData
-from app.schemas.user import UpdateUserSchema
 from app.core.exceptions.domain import (
     NotFoundException,
     DatabaseException,
@@ -45,7 +44,8 @@ async def create_user(user: RegistrationData, session: SessionDep) -> UserORM:
         new_user = UserORM(
             email=user.email, password_hash=user.password_hash
         )
-        await session.flush(new_user)
+        session.add(new_user)
+        await session.flush()
         new_user_roles = UserRoleORM(
             user_id=new_user.id, role=UserRole.CUSTOMER.value,
         )
@@ -60,45 +60,6 @@ async def create_user(user: RegistrationData, session: SessionDep) -> UserORM:
 
     await session.refresh(new_user)
     return new_user
-
-
-async def update_user(
-    user_id: UUID, 
-    user_update: UpdateUserSchema, 
-    session: SessionDep
-) -> UserORM:
-    """Patch user and their roles"""
-    user = await get_user_by_id(user_id, session)
-    
-    update_data = user_update.model_dump(exclude_none=True)
-    if not update_data:
-        return user
-
-    roles_to_update = update_data.pop("roles", None)
-
-    try:
-        if update_data:
-            user_stmt = update(UserORM).where(UserORM.id == user_id).values(update_data)
-            await session.execute(user_stmt)
-
-        if roles_to_update is not None:
-            delete_roles_stmt = delete(UserRoleORM).where(UserRoleORM.user_id == user_id)
-            await session.execute(delete_roles_stmt)
-            
-            if roles_to_update:
-                insert_roles_stmt = insert(UserRoleORM).values(
-                    [{"user_id": user_id, "role": role} for role in roles_to_update]
-                )
-                await session.execute(insert_roles_stmt)
-
-        await session.commit()
-        
-    except SQLAlchemyError:
-        await session.rollback()
-        raise DatabaseException()
-    
-    return await get_user_by_id(user_id, session)
-
 
 
 async def delete_user(user_id: UUID, session: SessionDep) -> bool:
