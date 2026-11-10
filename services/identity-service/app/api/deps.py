@@ -29,8 +29,6 @@ async def get_current_user(
     user = await get_user_by_id(user_id, session)
     return user
 
-from fastapi import Depends
-from typing import Sequence
 
 def require_role(*roles: UserRole):
     """Only allows access to users with specified roles"""

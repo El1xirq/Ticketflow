@@ -17,7 +17,7 @@ class InvalidCredentialsException(AppException):
 
 class NotFoundException(AppException):
     def __init__(self, detail: str = "Recource not found"):
-        super().__init__(detail=detail, status_code=401, error_code="NOT_FOUND")
+        super().__init__(detail=detail, status_code=404, error_code="NOT_FOUND")
 
 
 class ConflictException(AppException):

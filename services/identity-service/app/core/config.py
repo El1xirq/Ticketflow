@@ -10,7 +10,8 @@ class Settings(BaseSettings):
     postgres_password: str
     postgres_db: str
 
-    secret_key: str
+    secret_key: str = Field(validation_alias="JWT_PRIVATE_SECRET_KEY")
+    public_secret_key: str = Field(validation_alias="JWT_PUBLIC_SECRET_KEY")
     algorithm: str
     access_token_expire: int = Field(validation_alias="ACCESS_TOKEN_EXPIRE_MINUTES")
     refresh_token_expire: int = Field(validation_alias="REFRESH_TOKEN_EXPIRE_DAYS")

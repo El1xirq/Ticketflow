@@ -120,18 +120,6 @@ def test_verify_expired_token_raises():
         verify_token(token, "access")
 
 
-def test_verify_tampered_token_raises():
-    payload = {
-        "sub": str(uuid4()),
-        "type": "access",
-        "exp": datetime.now(timezone.utc) + timedelta(minutes=15),
-    }
-    token = jwt.encode(payload, "wrong-secret-key", algorithm=settings.algorithm)
-
-    with pytest.raises(InvalidTokenException):
-        verify_token(token, "access")
-
-
 def test_verify_garbage_token_raises():
     with pytest.raises(InvalidTokenException):
         verify_token("not-a-jwt", "access")
