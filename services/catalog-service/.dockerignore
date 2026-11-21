@@ -8,6 +8,5 @@ __pycache__/
 .git/
 .github/
 .env
-tests/
 *.md
 celerybeat-schedule*
