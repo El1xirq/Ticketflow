@@ -29,7 +29,7 @@ def create_access_token(user_id: UUID, roles: list[UserRole], email: str) -> str
         }
     )
 
-    access_token = jwt.encode(access_data, settings.secret_key, settings.algorithm)
+    access_token = jwt.encode(access_data, settings.private_key, settings.algorithm)
     return access_token
 
 
@@ -46,7 +46,7 @@ def create_refresh_token(user_id: UUID) -> tuple:
         }
     )
 
-    refresh_token = jwt.encode(refresh_data, settings.secret_key, settings.algorithm)
+    refresh_token = jwt.encode(refresh_data, settings.private_key, settings.algorithm)
 
     return (refresh_token, expire)
 
@@ -55,7 +55,7 @@ def decode_token(token: str) -> dict:
     """Decode token"""
     try:
         payload = jwt.decode(
-            token, settings.public_secret_key, algorithms=[settings.algorithm]
+            token, settings.public_key, algorithms=[settings.algorithm]
         )
         return payload
     except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):

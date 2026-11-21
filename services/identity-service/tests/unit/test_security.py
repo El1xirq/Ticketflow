@@ -113,7 +113,7 @@ def test_verify_expired_token_raises():
         "exp": datetime.now(timezone.utc) - timedelta(minutes=1),
     }
     token = jwt.encode(
-        expired_payload, settings.secret_key, algorithm=settings.algorithm
+        expired_payload, settings.private_key, algorithm=settings.algorithm
     )
 
     with pytest.raises(InvalidTokenException):

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from app.api.v1 import api_router, health_router
+from app.api.v1 import api_router, health_router, key_router
 from app.core.exceptions.handlers import (
     RequestValidationError,
     validation_exception_handler,
@@ -18,3 +18,4 @@ app.add_exception_handler(Exception, global_exception_handler)
 
 app.include_router(api_router)
 app.include_router(health_router)
+app.include_router(key_router)
