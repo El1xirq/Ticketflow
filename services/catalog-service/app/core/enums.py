@@ -11,3 +11,10 @@ class CurrencyCode(str, Enum):
     RUB = "RUB"
     USD = "USD"
     EUR = "EUR"
+
+
+
+class UserRole(str, Enum):
+    CUSTOMER = 'customer'
+    ORGANIZER = 'organizer'
+    ADMIN = 'admin'

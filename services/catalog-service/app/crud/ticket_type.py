@@ -1,5 +1,5 @@
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy import update, select
+from sqlalchemy import update, select, delete
 
 from datetime import datetime, timezone
 from uuid import UUID
@@ -25,6 +25,7 @@ async def get_ticket_type_by_id(
         raise NotFoundException()
     return ticket
 
+
 async def get_events_ticket(
         event_id: UUID,
         session: SessionDep,
@@ -32,6 +33,16 @@ async def get_events_ticket(
     """Get event tickets"""
     event = await get_event_by_id(event_id, session)
     return list(event.ticket_types)
+
+
+async def get_events_active_ticket(
+        event_id: UUID,
+        session: SessionDep,
+) -> list[TicketTypeORM]:
+    """Get event active tickets"""
+    stmt = select(TicketTypeORM).where(TicketTypeORM.event_id == event_id, TicketTypeORM.is_active.is_(True))
+    tickets = (await session.execute(stmt)).scalars().all()
+    return list(tickets)
 
 
 async def create_ticket_type(
@@ -81,3 +92,18 @@ async def update_ticket_type(
         await session.rollback()
         raise DatabaseException()
     return ticket
+
+
+async def delete_ticket_type(
+        ticket_type_id: UUID,
+        session: SessionDep,
+):
+    """Delete ticket type"""
+    stmt = delete(TicketTypeORM).where(TicketTypeORM.id == ticket_type_id)
+    try:
+        await session.execute(stmt)
+        await session.commit()
+    except SQLAlchemyError:
+        await session.rollback()
+        raise DatabaseException()
+    return None

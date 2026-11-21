@@ -9,6 +9,7 @@ from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
 from app.core.config import settings
+from app.core import security
 
 
 @pytest.fixture(scope="session")
@@ -38,25 +39,29 @@ def test_jwt_keys(tmp_path_factory):
     }
 
 
+
 @pytest.fixture(autouse=True)
 def configure_test_public_key(test_jwt_keys, monkeypatch):
+    public_key = test_jwt_keys["public_key"]
+    if isinstance(public_key, bytes):
+        public_key = public_key.decode("utf-8")
+
     monkeypatch.setattr(
-        settings,
-        "jwt_public_key",
-        test_jwt_keys["public_key"],
+        security,
+        "_cached_key_data",
+        {
+            "public_key": public_key,
+            "algorithm": "RS256",
+        },
     )
 
 
 @pytest.fixture
-def unic_id():
-    return uuid4()
-
-
-@pytest.fixture
 def make_access_token(test_jwt_keys):
-    def make_token(user_id, roles):
+    def make_token(roles):
         now = datetime.now(timezone.utc)
-
+        user_id = uuid4()
+        
         return jwt.encode(
             {
                 "sub": str(user_id),
@@ -72,20 +77,26 @@ def make_access_token(test_jwt_keys):
 
 
 @pytest.fixture
-def organizer_headers(make_access_token, unic_id):
-    token = make_access_token(unic_id, ["organizer"])
+def organizer_headers(make_access_token):
+    token = make_access_token(["organizer"])
     return {"Authorization": f"Bearer {token}"}
 
 
 @pytest.fixture
-def customer_headers(make_access_token, unic_id):
-    token = make_access_token(unic_id, ['customer'])
+def another_organizer_headers(make_access_token):
+    token = make_access_token(['organizer'])
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture
+def customer_headers(make_access_token):
+    token = make_access_token(['customer'])
     return {'Authorization': f'Bearer {token}'}
 
 
 @pytest.fixture
-def admin_headers(make_access_token, unic_id):
-    token = make_access_token(unic_id, ['admin'])
+def admin_headers(make_access_token):
+    token = make_access_token(['admin'])
     return {'Authorization': f'Bearer {token}'}
 
 
@@ -112,7 +123,7 @@ def body_ticket_type():
 
     return {
         "name": "Новый билет",
-        "description": "новое описаие",
+        "description": "новое описание",
         "price_minor": 8999,
         "currency": "RUB",
         "total_quantity": 30,
@@ -152,7 +163,7 @@ async def event_ticket(
     assert response.status_code == 201
     body = response.json()
 
-    return (body['id'], body['event_id'])
+    return (body['event_id'], body['id'])
 
 
 @pytest_asyncio.fixture
@@ -162,7 +173,7 @@ async def event_published(
     event_ticket,
 ):
     response = await client.post(
-        f'/v1/events/{event_ticket[1]}/publish',
+        f'/v1/events/{event_ticket[0]}/publish',
         headers=organizer_headers
     )
     assert response.status_code == 200

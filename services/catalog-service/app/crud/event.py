@@ -1,4 +1,4 @@
-from sqlalchemy import select, update
+from sqlalchemy import select, update, delete
 from sqlalchemy.exc import SQLAlchemyError
 
 from uuid import UUID
@@ -131,3 +131,18 @@ async def cancel_event(
         await session.rollback()
         raise DatabaseException()
     return event
+
+
+async def delete_event(
+        event_id: UUID,
+        session: SessionDep,
+):
+    """Delete event"""
+    stmt = delete(EventORM).where(EventORM.id == event_id)
+    try:
+        await session.execute(stmt)
+        await session.commit()
+    except SQLAlchemyError:
+        await session.rollback()
+        raise DatabaseException()
+    return None

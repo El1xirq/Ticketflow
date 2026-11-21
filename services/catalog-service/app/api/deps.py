@@ -26,7 +26,7 @@ async def get_current_actor(
     if credentials is None:
         raise InvalidTokenException()
 
-    payload = verify_access_token(credentials.credentials)
+    payload = await verify_access_token(credentials.credentials)
 
     sub = payload.get("sub")
     if not isinstance(sub, str):

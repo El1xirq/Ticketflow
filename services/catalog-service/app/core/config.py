@@ -9,9 +9,8 @@ class Settings(BaseSettings):
     postgres_password: str
     postgres_db: str
 
-    jwt_public_key: str = Field(validation_alias='JWT_PUBLIC_KEY')
-    algorithm: str
-
+    identity_url: str = Field(validation_alias="IDENTITY_SERVICE_URL")
+    
     model_config = SettingsConfigDict(env_file='.env', env_file_encoding='utf-8')
 
 settings = Settings()
