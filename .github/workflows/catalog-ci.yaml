@@ -1,0 +1,48 @@
+name: Catalog Service CI
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'services/catalog-service/**'
+      - 'docker-compose.yml'
+      - '.github/workflows/ci-catalog.yml'
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'services/catalog-service/**'
+      - 'docker-compose.yml'
+      - '.github/workflows/ci-catalog.yml'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Скачиваем код репозитория
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup environment
+        run: |
+          cp services/catalog-service/.env.example services/catalog-service/.env
+          touch services/identity-service/.env
+
+      - name: Build Docker image
+        run: docker compose build catalog-service
+
+      - name: Start database
+        run: docker compose up -d catalog-db
+
+
+      - name: Run pytest
+        run: >
+          docker compose run --rm --no-deps
+          -v ${{ github.workspace }}/services/catalog-service/tests:/app/tests
+          catalog-service pytest
+
+      - name: Cleanup
+        if: always()
+        run: docker compose down -v
