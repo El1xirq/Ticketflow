@@ -21,20 +21,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Скачиваем код репозитория
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Setup environment
         run: |
           cp services/catalog-service/.env.example services/catalog-service/.env
-          touch services/identity-service/.env
 
       - name: Build Docker image
         run: docker compose build catalog-service
 
       - name: Start database
-        run: docker compose up -d catalog-db
+        run: docker compose up -d --wait catalog-db
 
 
       - name: Run pytest

@@ -27,6 +27,20 @@ async def override_get_db():
 app.dependency_overrides[get_db] = override_get_db
 
 
+async def ensure_test_database():
+    admin_url = settings.test_db.rsplit("/", 1)[0] + "/postgres"
+    admin_engine = create_async_engine(admin_url, isolation_level="AUTOCOMMIT")
+    async with admin_engine.connect() as conn:
+        db_name = settings.test_db.rsplit("/", 1)[-1]
+        exists = await conn.scalar(
+            text("SELECT 1 FROM pg_database WHERE datname = :name"),
+            {"name": db_name}
+        )
+        if not exists:
+            await conn.execute(text(f'CREATE DATABASE "{db_name}"'))
+    await admin_engine.dispose()
+
+
 @pytest_asyncio.fixture(scope="session", autouse=True)
 async def setup_database():
     async with test_engine.begin() as conn:

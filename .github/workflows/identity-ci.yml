@@ -1,4 +1,4 @@
-name: CI Pipeline
+name: Identity CI Pipeline
 
 on:
   push:
@@ -20,7 +20,7 @@ jobs:
         run: make init
 
       - name: Build Docker images
-        run: docker compose build
+        run: docker compose build identity-service
 
       - name: Run identity-service tests
         run: docker compose run --rm identity-service pytest
