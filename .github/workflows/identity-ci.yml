@@ -17,13 +17,18 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup environment and JWT keys
-        run: make init
+        run: |
+          make init
+          cp services/catalog-service/.env.example services/catalog-service/.env
 
-      - name: Build Docker images
+      - name: Build Docker image
         run: docker compose build identity-service
 
+      - name: Start identity database
+        run: docker compose up -d --wait identity-db
+
       - name: Run identity-service tests
-        run: docker compose run --rm identity-service pytest
+        run: docker compose run --rm --no-deps --entrypoint pytest identity-service
 
       - name: Cleanup
         if: always()
